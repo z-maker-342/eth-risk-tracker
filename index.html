@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ETH Night Dump Risk Tracker V2</title>
+<title>ETH Night Dump Risk Tracker V4</title>
 <style>
 body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:18px;color:#1f2937}
-.container{max-width:1080px;margin:auto}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.container{max-width:1120px;margin:auto}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 h1{font-size:28px;margin-top:0}h2{font-size:20px;margin-top:0}.small{color:#64748b;line-height:1.5;font-size:14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
 label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
 input,select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;box-sizing:border-box}
 button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:700;margin-top:14px;margin-right:8px;font-size:15px}
-.primary{background:#2563eb;color:white}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:white}
+.primary{background:#2563eb;color:white}.secondary{background:#e5e7eb;color:#111827}.danger{background:#dc2626;color:white}.success{background:#059669;color:#fff}
 .result{padding:22px;border-radius:16px;margin-top:18px;font-size:20px;font-weight:bold;text-align:center}
 .low{background:#d1fae5;color:#065f46}.medium{background:#fef3c7;color:#92400e}.high{background:#fee2e2;color:#991b1b}
 .explain{margin-top:12px;text-align:left;font-size:15px;font-weight:normal;line-height:1.55}
@@ -20,39 +20,66 @@ button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:
 .mini{padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;font-size:14px}
 .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #edf2f7;text-align:center;white-space:nowrap}th{background:#f1f5f9}
 .pill{display:inline-block;padding:5px 10px;border-radius:999px;font-weight:700;font-size:12px}.footer-note{font-size:12px;color:#64748b;margin-top:8px;line-height:1.4}
+.notice{padding:12px;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-size:14px;line-height:1.5;margin-top:12px}
+.badge{display:inline-block;border-radius:999px;padding:4px 9px;font-size:12px;background:#eef2ff;color:#3730a3;font-weight:bold}
 @media(max-width:600px){body{padding:10px}h1{font-size:22px}.card{padding:15px}}
 </style>
 </head>
 <body>
 <div class="container">
 <div class="card">
-<h1>ETH Night Dump Risk Tracker V2</h1>
-<p class="small">Tiered scoring for DXY momentum, Nasdaq futures, ETH ETF flow trend, late-session re-check, ETH trend, and funding/leverage. This is a risk filter, not a guaranteed prediction tool.</p>
+<h1>ETH Night Dump Risk Tracker V4</h1>
+<p class="small">
+Semi-auto ETH risk tracker for GitHub Pages. It can auto-load ETH spot price and ETHUSDT funding from Binance public APIs. You still manually enter DXY, Nasdaq futures, and ETH ETF flows.
+</p>
+<div class="notice">
+<b>Important:</b> This tool is a risk filter, not financial advice. Use it to avoid bad nights and improve discipline, not to predict exact tops or bottoms.
+</div>
 </div>
 
 <div class="card">
-<h2>Daily Inputs</h2>
+<h2>Daily / Historical Input</h2>
 <div class="grid">
 <div><label>Date</label><input id="date" type="date"></div>
+<div><label>ETH Spot Price <span class="badge">auto</span></label><input id="ethPrice" type="number" step="0.01" placeholder="Click Auto ETH Price or enter manually"></div>
+<div><label>Funding Rate % <span class="badge">auto</span></label><input id="fundingRate" type="number" step="0.0001" placeholder="Click Auto Funding"></div>
 <div><label>DXY Today</label><input id="dxyToday" type="number" step="0.01" placeholder="e.g. 106.20"></div>
-<div><label>DXY Yesterday</label><input id="dxyYesterday" type="number" step="0.01" placeholder="e.g. 105.80"></div>
+<div><label>DXY Previous Day</label><input id="dxyYesterday" type="number" step="0.01" placeholder="e.g. 105.80"></div>
 <div><label>Nasdaq Futures %</label><input id="nasdaq" type="number" step="0.01" placeholder="e.g. -0.75"></div>
 <div><label>ETH ETF Flow Today ($M)</label><input id="etfToday" type="number" step="0.01" placeholder="e.g. -45"></div>
-<div><label>ETH ETF Flow Yesterday ($M)</label><input id="etfYesterday" type="number" step="0.01" placeholder="e.g. -20"></div>
+<div><label>ETH ETF Flow Previous Day ($M)</label><input id="etfYesterday" type="number" step="0.01" placeholder="e.g. -20"></div>
 <div><label>Late Re-check</label><select id="lateCheck"><option value="neutral">Neutral / Not checked</option><option value="worse">DXY/Futures worsened</option><option value="better">DXY/Futures improved</option></select></div>
 <div><label>ETH Intraday Trend</label><select id="ethTrend"><option value="flat">Flat</option><option value="rising">Rising</option><option value="falling">Falling</option></select></div>
 <div><label>Funding / Leverage</label><select id="funding"><option value="normal">Normal</option><option value="high">High long leverage</option><option value="low">Low / neutral leverage</option></select></div>
+<div><label>Notes</label><input id="notes" type="text" placeholder="e.g. CPI night, FOMC, ETF inflow recovery"></div>
 </div>
-<button class="primary" onclick="calculateRisk()">Calculate Tonight Bias</button>
+<button class="success" onclick="autoEthPrice()">Auto ETH Price</button>
+<button class="success" onclick="autoFunding()">Auto Funding</button>
+<button class="primary" onclick="calculateRisk()">Calculate & Save</button>
+<button class="secondary" onclick="loadSelectedDate()">Load Selected Date</button>
 <button class="secondary" onclick="fillExample()">Fill High-Risk Example</button>
 <button class="secondary" onclick="clearInputs()">Clear Input</button>
+<div id="apiStatus" class="footer-note"></div>
 <div id="result"></div>
 </div>
 
 <div class="card">
-<h2>History</h2>
-<div class="table-wrap"><table><thead><tr><th>Date</th><th>DXY %</th><th>Nasdaq %</th><th>ETF Today</th><th>ETF Yesterday</th><th>ETH Trend</th><th>Funding</th><th>Score</th><th>Signal</th><th>Bias</th></tr></thead><tbody id="history"></tbody></table></div>
+<h2>History / Backtest Input</h2>
+<p class="small">
+To backfill history: choose any past date, key in the relevant data, then click <b>Calculate & Save</b>. If the same date already exists, it will update that row.
+</p>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Date</th><th>ETH</th><th>Funding %</th><th>DXY %</th><th>Nasdaq %</th><th>ETF Today</th><th>ETF Prev</th><th>ETH Trend</th><th>Funding</th><th>Score</th><th>Signal</th><th>Bias</th><th>Notes</th>
+</tr>
+</thead>
+<tbody id="history"></tbody>
+</table>
+</div>
 <button class="secondary" onclick="exportCSV()">Export CSV</button>
+<button class="secondary" onclick="importCSVPrompt()">Import CSV Paste</button>
 <button class="danger" onclick="clearHistory()">Clear History</button>
 </div>
 
@@ -66,54 +93,360 @@ button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:
 <div class="mini"><b>ETH Trend:</b><br>+1 if falling<br>-1 if rising</div>
 <div class="mini"><b>Funding:</b><br>+1 if high long leverage<br>-1 if low/neutral leverage</div>
 </div>
-<p class="footer-note">Final interpretation: 0–2 LOW, 3–4 MEDIUM, 5+ HIGH.</p>
+<p class="footer-note">
+Final interpretation: 0–2 LOW, 3–4 MEDIUM, 5+ HIGH. Funding mapping: above +0.03% = high long leverage, below -0.03% = low/neutral leverage, otherwise normal.
+</p>
 </div>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
-function todayDate(){return new Date().toISOString().split("T")[0];}
-$("date").value=todayDate();
-function pctChange(today,yesterday){if(!yesterday||yesterday===0)return 0;return((today-yesterday)/yesterday)*100;}
-function calculateRisk(){
-const date=$("date").value||todayDate();
-const dxyToday=parseFloat($("dxyToday").value),dxyYesterday=parseFloat($("dxyYesterday").value),nasdaq=parseFloat($("nasdaq").value),etfToday=parseFloat($("etfToday").value),etfYesterday=parseFloat($("etfYesterday").value);
-const lateCheck=$("lateCheck").value,ethTrend=$("ethTrend").value,funding=$("funding").value;
-if([dxyToday,dxyYesterday,nasdaq,etfToday,etfYesterday].some(v=>isNaN(v))){$("result").innerHTML='<div class="result high">Please fill in all numeric fields first.</div>';return;}
-let score=0,reasons=[],dxyPct=pctChange(dxyToday,dxyYesterday);
-if(dxyPct>=0.60){score+=2;reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, strong USD risk-off signal. (+2)`);}
-else if(dxyPct>=0.30){score+=1;reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, mild USD risk-off signal. (+1)`);}
-else{reasons.push(`DXY change is ${dxyPct.toFixed(2)}%, not a major pressure signal. (+0)`);}
-if(nasdaq<-1.0){score+=2;reasons.push("Nasdaq futures are below -1.0%, strong risk-off pressure. (+2)");}
-else if(nasdaq<-0.5){score+=1;reasons.push("Nasdaq futures are below -0.5%, mild risk-off pressure. (+1)");}
-else{reasons.push("Nasdaq futures are not weak enough to trigger risk-off. (+0)");}
-if(etfToday<0&&etfYesterday<0){score+=2;reasons.push("ETH ETF flows show 2 consecutive outflow days. (+2)");}
-else if(etfToday<0){score+=1;reasons.push("ETH ETF flow today is negative. (+1)");}
-else{reasons.push("ETH ETF flow today is positive or neutral. (+0)");}
-if(lateCheck==="worse"){score+=1;reasons.push("Late-session re-check worsened. (+1)");}
-else if(lateCheck==="better"){score-=1;reasons.push("Late-session re-check improved. (-1)");}
-else{reasons.push("Late-session re-check is neutral or not checked. (+0)");}
-if(ethTrend==="falling"){score+=1;reasons.push("ETH intraday trend is falling, confirming downside pressure. (+1)");}
-else if(ethTrend==="rising"){score-=1;reasons.push("ETH intraday trend is rising, reducing dump probability. (-1)");}
-else{reasons.push("ETH intraday trend is flat. (+0)");}
-if(funding==="high"){score+=1;reasons.push("High long leverage increases liquidation cascade risk. (+1)");}
-else if(funding==="low"){score-=1;reasons.push("Low/neutral leverage reduces liquidation cascade risk. (-1)");}
-else{reasons.push("Funding/leverage is normal. (+0)");}
-score=Math.max(0,score);
-let signal,css,bias,confidence,action;
-if(score>=5){signal="HIGH DUMP RISK";css="high";bias="Bearish Night Bias";confidence="High";action="Reduce risk, avoid leverage, and expect volatility/liquidation risk.";}
-else if(score>=3){signal="MEDIUM RISK";css="medium";bias="Uncertain / Choppy Bias";confidence="Medium";action="Be cautious. Avoid aggressive longs unless ETH reclaims key levels.";}
-else{signal="LOW RISK";css="low";bias="Stable / Slight Bull Bias";confidence="Low-to-Medium";action="Lower dump risk, but keep monitoring news and late-session changes.";}
-$("result").innerHTML=`<div class="result ${css}">Score: ${score} — ${signal}<br><span style="font-size:16px;">${bias} | Confidence: ${confidence}</span><div class="explain"><b>Suggested action:</b> ${action}<br><br><b>Reasoning:</b><br>${reasons.map(r=>"• "+r).join("<br>")}</div></div>`;
-saveRecord({date,dxyPct:dxyPct.toFixed(2),nasdaq,etfToday,etfYesterday,ethTrend,funding,score,signal,bias});
+
+function todayDate(){
+  return new Date().toISOString().split("T")[0];
 }
-function getHistory(){return JSON.parse(localStorage.getItem("ethRiskV2History")||"[]");}
-function saveRecord(record){let history=getHistory();history=history.filter(r=>r.date!==record.date);history.unshift(record);localStorage.setItem("ethRiskV2History",JSON.stringify(history.slice(0,120)));renderHistory();}
-function renderHistory(){const history=getHistory();$("history").innerHTML=history.map(r=>{const cls=r.score>=5?"high":r.score>=3?"medium":"low";return `<tr><td>${r.date}</td><td>${r.dxyPct}%</td><td>${r.nasdaq}%</td><td>$${r.etfToday}M</td><td>$${r.etfYesterday}M</td><td>${r.ethTrend}</td><td>${r.funding}</td><td>${r.score}</td><td><span class="pill ${cls}">${r.signal}</span></td><td>${r.bias}</td></tr>`;}).join("");}
-function fillExample(){$("date").value=todayDate();$("dxyToday").value="106.20";$("dxyYesterday").value="105.55";$("nasdaq").value="-1.25";$("etfToday").value="-45";$("etfYesterday").value="-30";$("lateCheck").value="worse";$("ethTrend").value="falling";$("funding").value="high";}
-function clearInputs(){$("date").value=todayDate();$("dxyToday").value="";$("dxyYesterday").value="";$("nasdaq").value="";$("etfToday").value="";$("etfYesterday").value="";$("lateCheck").value="neutral";$("ethTrend").value="flat";$("funding").value="normal";$("result").innerHTML="";}
-function clearHistory(){if(confirm("Clear all saved history?")){localStorage.removeItem("ethRiskV2History");renderHistory();}}
-function exportCSV(){const history=getHistory();if(!history.length){alert("No history to export.");return;}const rows=[["Date","DXY %","Nasdaq %","ETF Today","ETF Yesterday","ETH Trend","Funding","Score","Signal","Bias"],...history.map(r=>[r.date,r.dxyPct,r.nasdaq,r.etfToday,r.etfYesterday,r.ethTrend,r.funding,r.score,r.signal,r.bias])];const csv=rows.map(row=>row.join(",")).join("\n");const blob=new Blob([csv],{type:"text/csv"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download="eth_night_dump_tracker_v2_history.csv";a.click();URL.revokeObjectURL(url);}
+
+$("date").value=todayDate();
+
+async function autoEthPrice(){
+  $("apiStatus").innerText="Loading ETH price from Binance public API...";
+  try{
+    const res=await fetch("https://api.binance.com/api/v3/ticker/price?symbol=ETHUSDT");
+    if(!res.ok) throw new Error("API response not OK");
+    const data=await res.json();
+    $("ethPrice").value=parseFloat(data.price).toFixed(2);
+    $("apiStatus").innerText="ETH price loaded successfully: $" + parseFloat(data.price).toFixed(2);
+  }catch(e){
+    $("apiStatus").innerText="Unable to auto-load ETH price. Enter it manually. Some networks/browsers block public API calls.";
+  }
+}
+
+async function autoFunding(){
+  $("apiStatus").innerText="Loading ETH funding rate from Binance Futures public API...";
+  try{
+    const res=await fetch("https://fapi.binance.com/fapi/v1/fundingRate?symbol=ETHUSDT&limit=1");
+    if(!res.ok) throw new Error("Funding API response not OK");
+    const data=await res.json();
+    if(!data || !data.length) throw new Error("No funding data returned");
+
+    const rate=parseFloat(data[0].fundingRate);
+    const ratePercent=rate*100;
+    $("fundingRate").value=ratePercent.toFixed(4);
+
+    if(ratePercent > 0.03){
+      $("funding").value="high";
+    }else if(ratePercent < -0.03){
+      $("funding").value="low";
+    }else{
+      $("funding").value="normal";
+    }
+
+    $("apiStatus").innerText="ETH funding loaded: " + ratePercent.toFixed(4) + "% → " + $("funding").value;
+  }catch(e){
+    $("apiStatus").innerText="Unable to auto-load funding. Enter it manually. Some networks may block Binance Futures API.";
+  }
+}
+
+function pctChange(today,yesterday){
+  if(!yesterday || yesterday===0) return 0;
+  return ((today-yesterday)/yesterday)*100;
+}
+
+function calculateRisk(){
+  const date=$("date").value||todayDate();
+  const ethPrice=parseFloat($("ethPrice").value||"0");
+  const fundingRate=parseFloat($("fundingRate").value||"0");
+  const dxyToday=parseFloat($("dxyToday").value);
+  const dxyYesterday=parseFloat($("dxyYesterday").value);
+  const nasdaq=parseFloat($("nasdaq").value);
+  const etfToday=parseFloat($("etfToday").value);
+  const etfYesterday=parseFloat($("etfYesterday").value);
+  const lateCheck=$("lateCheck").value;
+  const ethTrend=$("ethTrend").value;
+  const funding=$("funding").value;
+  const notes=$("notes").value.trim();
+
+  if([dxyToday,dxyYesterday,nasdaq,etfToday,etfYesterday].some(v=>isNaN(v))){
+    $("result").innerHTML='<div class="result high">Please fill in DXY, Nasdaq, and ETF numeric fields first.</div>';
+    return;
+  }
+
+  let score=0;
+  let reasons=[];
+  let dxyPct=pctChange(dxyToday,dxyYesterday);
+
+  if(dxyPct>=0.60){
+    score+=2;
+    reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, strong USD risk-off signal. (+2)`);
+  }else if(dxyPct>=0.30){
+    score+=1;
+    reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, mild USD risk-off signal. (+1)`);
+  }else{
+    reasons.push(`DXY change is ${dxyPct.toFixed(2)}%, not a major pressure signal. (+0)`);
+  }
+
+  if(nasdaq<-1.0){
+    score+=2;
+    reasons.push("Nasdaq futures are below -1.0%, strong risk-off pressure. (+2)");
+  }else if(nasdaq<-0.5){
+    score+=1;
+    reasons.push("Nasdaq futures are below -0.5%, mild risk-off pressure. (+1)");
+  }else{
+    reasons.push("Nasdaq futures are not weak enough to trigger risk-off. (+0)");
+  }
+
+  if(etfToday<0 && etfYesterday<0){
+    score+=2;
+    reasons.push("ETH ETF flows show 2 consecutive outflow days. (+2)");
+  }else if(etfToday<0){
+    score+=1;
+    reasons.push("ETH ETF flow today is negative. (+1)");
+  }else{
+    reasons.push("ETH ETF flow today is positive or neutral. (+0)");
+  }
+
+  if(lateCheck==="worse"){
+    score+=1;
+    reasons.push("Late-session re-check worsened. (+1)");
+  }else if(lateCheck==="better"){
+    score-=1;
+    reasons.push("Late-session re-check improved. (-1)");
+  }else{
+    reasons.push("Late-session re-check is neutral or not checked. (+0)");
+  }
+
+  if(ethTrend==="falling"){
+    score+=1;
+    reasons.push("ETH intraday trend is falling, confirming downside pressure. (+1)");
+  }else if(ethTrend==="rising"){
+    score-=1;
+    reasons.push("ETH intraday trend is rising, reducing dump probability. (-1)");
+  }else{
+    reasons.push("ETH intraday trend is flat. (+0)");
+  }
+
+  if(funding==="high"){
+    score+=1;
+    reasons.push("Funding indicates high long leverage, increasing liquidation cascade risk. (+1)");
+  }else if(funding==="low"){
+    score-=1;
+    reasons.push("Funding indicates low/negative leverage pressure, reducing long liquidation risk. (-1)");
+  }else{
+    reasons.push("Funding/leverage is normal. (+0)");
+  }
+
+  score=Math.max(0,score);
+
+  let signal,css,bias,confidence,action;
+  if(score>=5){
+    signal="HIGH DUMP RISK";
+    css="high";
+    bias="Bearish Night Bias";
+    confidence="High";
+    action="Reduce risk, avoid leverage, and expect volatility/liquidation risk.";
+  }else if(score>=3){
+    signal="MEDIUM RISK";
+    css="medium";
+    bias="Uncertain / Choppy Bias";
+    confidence="Medium";
+    action="Be cautious. Avoid aggressive longs unless ETH reclaims key levels.";
+  }else{
+    signal="LOW RISK";
+    css="low";
+    bias="Stable / Slight Bull Bias";
+    confidence="Low-to-Medium";
+    action="Lower dump risk, but keep monitoring news and late-session changes.";
+  }
+
+  $("result").innerHTML=`<div class="result ${css}">
+    Score: ${score} — ${signal}<br>
+    <span style="font-size:16px;">${bias} | Confidence: ${confidence}</span>
+    <div class="explain">
+      <b>Suggested action:</b> ${action}<br><br>
+      <b>Reasoning:</b><br>
+      ${reasons.map(r=>"• "+r).join("<br>")}
+    </div>
+  </div>`;
+
+  saveRecord({
+    date,
+    ethPrice:ethPrice?ethPrice.toFixed(2):"",
+    fundingRate:isNaN(fundingRate)?"":fundingRate.toFixed(4),
+    dxyToday,
+    dxyYesterday,
+    dxyPct:dxyPct.toFixed(2),
+    nasdaq,
+    etfToday,
+    etfYesterday,
+    lateCheck,
+    ethTrend,
+    funding,
+    score,
+    signal,
+    bias,
+    notes
+  });
+}
+
+function getHistory(){
+  return JSON.parse(localStorage.getItem("ethRiskV4History")||"[]");
+}
+
+function saveRecord(record){
+  let history=getHistory();
+  history=history.filter(r=>r.date!==record.date);
+  history.unshift(record);
+  history.sort((a,b)=>b.date.localeCompare(a.date));
+  localStorage.setItem("ethRiskV4History",JSON.stringify(history.slice(0,365)));
+  renderHistory();
+}
+
+function renderHistory(){
+  const history=getHistory();
+  $("history").innerHTML=history.map(r=>{
+    const cls=r.score>=5?"high":r.score>=3?"medium":"low";
+    return `<tr onclick="loadDate('${r.date}')" style="cursor:pointer">
+      <td>${r.date}</td>
+      <td>${r.ethPrice?("$"+r.ethPrice):"-"}</td>
+      <td>${r.fundingRate?r.fundingRate+"%":"-"}</td>
+      <td>${r.dxyPct}%</td>
+      <td>${r.nasdaq}%</td>
+      <td>$${r.etfToday}M</td>
+      <td>$${r.etfYesterday}M</td>
+      <td>${r.ethTrend}</td>
+      <td>${r.funding}</td>
+      <td>${r.score}</td>
+      <td><span class="pill ${cls}">${r.signal}</span></td>
+      <td>${r.bias}</td>
+      <td>${r.notes||""}</td>
+    </tr>`;
+  }).join("");
+}
+
+function loadSelectedDate(){
+  loadDate($("date").value);
+}
+
+function loadDate(date){
+  const r=getHistory().find(x=>x.date===date);
+  if(!r){
+    alert("No saved record for this date yet.");
+    return;
+  }
+  $("date").value=r.date;
+  $("ethPrice").value=r.ethPrice||"";
+  $("fundingRate").value=r.fundingRate||"";
+  $("dxyToday").value=r.dxyToday;
+  $("dxyYesterday").value=r.dxyYesterday;
+  $("nasdaq").value=r.nasdaq;
+  $("etfToday").value=r.etfToday;
+  $("etfYesterday").value=r.etfYesterday;
+  $("lateCheck").value=r.lateCheck||"neutral";
+  $("ethTrend").value=r.ethTrend||"flat";
+  $("funding").value=r.funding||"normal";
+  $("notes").value=r.notes||"";
+  $("result").innerHTML=`<div class="result ${r.score>=5?"high":r.score>=3?"medium":"low"}">Loaded ${date}: Score ${r.score} — ${r.signal}</div>`;
+}
+
+function fillExample(){
+  $("date").value=todayDate();
+  $("ethPrice").value="2300";
+  $("fundingRate").value="0.0500";
+  $("dxyToday").value="106.20";
+  $("dxyYesterday").value="105.55";
+  $("nasdaq").value="-1.25";
+  $("etfToday").value="-45";
+  $("etfYesterday").value="-30";
+  $("lateCheck").value="worse";
+  $("ethTrend").value="falling";
+  $("funding").value="high";
+  $("notes").value="Example high-risk setup";
+}
+
+function clearInputs(){
+  $("date").value=todayDate();
+  $("ethPrice").value="";
+  $("fundingRate").value="";
+  $("dxyToday").value="";
+  $("dxyYesterday").value="";
+  $("nasdaq").value="";
+  $("etfToday").value="";
+  $("etfYesterday").value="";
+  $("lateCheck").value="neutral";
+  $("ethTrend").value="flat";
+  $("funding").value="normal";
+  $("notes").value="";
+  $("result").innerHTML="";
+  $("apiStatus").innerText="";
+}
+
+function clearHistory(){
+  if(confirm("Clear all saved history?")){
+    localStorage.removeItem("ethRiskV4History");
+    renderHistory();
+  }
+}
+
+function exportCSV(){
+  const history=getHistory();
+  if(!history.length){
+    alert("No history to export.");
+    return;
+  }
+  const rows=[
+    ["Date","ETH Price","Funding Rate %","DXY Today","DXY Previous","DXY %","Nasdaq %","ETF Today","ETF Previous","Late Check","ETH Trend","Funding","Score","Signal","Bias","Notes"],
+    ...history.map(r=>[
+      r.date,r.ethPrice,r.fundingRate,r.dxyToday,r.dxyYesterday,r.dxyPct,r.nasdaq,r.etfToday,r.etfYesterday,r.lateCheck,r.ethTrend,r.funding,r.score,r.signal,r.bias,(r.notes||"").replaceAll(",",";")
+    ])
+  ];
+  const csv=rows.map(row=>row.join(",")).join("\n");
+  const blob=new Blob([csv],{type:"text/csv"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="eth_night_dump_tracker_v4_history.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importCSVPrompt(){
+  const text=prompt("Paste CSV rows without header. Format:\nDate,ETH Price,Funding Rate %,DXY Today,DXY Previous,DXY %,Nasdaq %,ETF Today,ETF Previous,Late Check,ETH Trend,Funding,Score,Signal,Bias,Notes");
+  if(!text) return;
+
+  let history=getHistory();
+
+  text.split("\n").forEach(line=>{
+    const p=line.split(",");
+    if(p.length<15) return;
+
+    const rec={
+      date:p[0],
+      ethPrice:p[1],
+      fundingRate:p[2],
+      dxyToday:parseFloat(p[3]),
+      dxyYesterday:parseFloat(p[4]),
+      dxyPct:p[5],
+      nasdaq:parseFloat(p[6]),
+      etfToday:parseFloat(p[7]),
+      etfYesterday:parseFloat(p[8]),
+      lateCheck:p[9]||"neutral",
+      ethTrend:p[10]||"flat",
+      funding:p[11]||"normal",
+      score:parseInt(p[12]||"0"),
+      signal:p[13]||"",
+      bias:p[14]||"",
+      notes:(p[15]||"")
+    };
+
+    history=history.filter(r=>r.date!==rec.date);
+    history.push(rec);
+  });
+
+  history.sort((a,b)=>b.date.localeCompare(a.date));
+  localStorage.setItem("ethRiskV4History",JSON.stringify(history.slice(0,365)));
+  renderHistory();
+}
+
 renderHistory();
 </script>
 </body>
