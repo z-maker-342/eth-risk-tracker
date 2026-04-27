@@ -125,37 +125,83 @@ $("date").value=todayDate();
 function parseChatGPT(){
  const text=$("chatInput").value;
  if(!text.trim()){alert("Please paste ChatGPT output first.");return;}
- function clean(v){return v?String(v).replace(/[$,%]/g,"").replace(/,/g,"").trim():"";}
- function num(labels){
-   for(const label of labels){
-     const re=new RegExp(label+"\\s*(?:\\([^\\)]*\\))?\\s*:?\\s*([-+]?\\$?\\d{1,3}(?:,\\d{3})*(?:\\.\\d+)?%?|[-+]?\\d*\\.\\d+%?)","i");
-     const m=text.match(re); if(m)return clean(m[1]);
-   } return "";
+
+ function normalize(s){
+   return String(s||"").toLowerCase().replace(/\s+/g," ").trim();
  }
- function word(labels){
-   for(const label of labels){
-     const re=new RegExp(label+"\\s*(?:\\([^\\)]*\\))?\\s*:?\\s*([a-zA-Z]+)","i");
-     const m=text.match(re); if(m)return m[1].toLowerCase();
-   } return "";
+
+ function cleanNum(v){
+   if(!v) return "";
+   let s=String(v).replace(/[$,%]/g,"").replace(/,/g,"").trim();
+   s=s.replace(/\b(million|millions|mn|m)\b/ig,"").trim();
+   return s;
  }
- const map=[
-   ["ethPrice",num(["ETH price"])],
-   ["fundingRate",num(["Funding rate"])],
-   ["dxyToday",num(["DXY today"])],
-   ["dxyYesterday",num(["DXY yesterday","DXY previous","DXY previous day"])],
-   ["nasdaq",num(["Nasdaq futures %","Nasdaq futures","NASDAQ futures %","NASDAQ futures"])],
-   ["etfToday",num(["ETF today","ETH ETF flow today","ETH ETF flows today"])],
-   ["etfYesterday",num(["ETF yesterday","ETF previous","ETF previous day","ETH ETF flow previous day","ETH ETF flows previous day"])]
+
+ function findValueByLabels(labels){
+   const lines=text.split(/\n+/).map(l=>l.trim()).filter(Boolean);
+   const normLabels=labels.map(normalize);
+
+   // First: line-based search, best for strict format
+   for(const line of lines){
+     const nline=normalize(line);
+     for(const lab of normLabels){
+       if(nline.startsWith(lab)){
+         let value=line.split(":").slice(1).join(":").trim();
+         if(!value){
+           value=line.replace(new RegExp(lab.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),"").trim();
+         }
+         return value;
+       }
+     }
+   }
+
+   // Second: flexible regex anywhere in text
+   for(const lab of labels){
+     const safe=lab.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+     const re=new RegExp(safe+"\\s*(?:\\([^\\)]*\\))?\\s*:?\\s*([^\\n]+)","i");
+     const m=text.match(re);
+     if(m) return m[1].trim();
+   }
+
+   return "";
+ }
+
+ function extractNumber(labels){
+   let raw=findValueByLabels(labels);
+   if(!raw) return "";
+   const m=raw.match(/[-+]?\$?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?|[-+]?\d*\.?\d+%?/);
+   return m?cleanNum(m[0]):"";
+ }
+
+ function extractWord(labels){
+   let raw=findValueByLabels(labels);
+   if(!raw) return "";
+   const m=raw.match(/[a-zA-Z]+/);
+   return m?m[0].toLowerCase():"";
+ }
+
+ const fields=[
+   ["ethPrice",extractNumber(["ETH price","Ethereum price","ETH spot price"])],
+   ["fundingRate",extractNumber(["Funding rate","ETH funding rate","ETHUSDT funding rate"])],
+   ["dxyToday",extractNumber(["DXY today","DXY current","DXY now"])],
+   ["dxyYesterday",extractNumber(["DXY yesterday","DXY previous","DXY previous day","DXY prior day"])],
+   ["nasdaq",extractNumber(["Nasdaq futures %","Nasdaq futures","NASDAQ futures %","NASDAQ futures","NQ futures","Nasdaq 100 futures","Nasdaq-100 futures"])],
+   ["etfToday",extractNumber(["ETF today","ETH ETF today","ETH ETF flow today","ETH ETF flows today","Ethereum ETF flow today","Ethereum ETF flows today","Spot ETH ETF flow today","Net ETF flow today"])],
+   ["etfYesterday",extractNumber(["ETF yesterday","ETF previous","ETF previous day","ETH ETF yesterday","ETH ETF previous day","ETH ETF flow previous day","ETH ETF flows previous day","Ethereum ETF flow previous day","Spot ETH ETF flow previous day","Net ETF flow previous day"])]
  ];
- map.forEach(([id,val])=>{if(val)$(id).value=val;});
- const trend=word(["ETH trend","ETH intraday trend"]);
- if(trend.includes("ris"))$("ethTrend").value="rising";
+
+ fields.forEach(([id,val])=>{if(val)$(id).value=val;});
+
+ const trend=extractWord(["ETH trend","ETH intraday trend","Ethereum trend"]);
+ if(trend.includes("ris")||trend.includes("up"))$("ethTrend").value="rising";
  else if(trend.includes("fall")||trend.includes("down"))$("ethTrend").value="falling";
- else if(trend.includes("flat")||trend.includes("side"))$("ethTrend").value="flat";
- const fund=word(["Funding \\(high/normal/low\\)","Funding"]);
+ else if(trend.includes("flat")||trend.includes("side")||trend.includes("neutral"))$("ethTrend").value="flat";
+
+ const fund=extractWord(["Funding (high/normal/low)","Funding sentiment","Funding"]);
  if(fund.includes("high"))$("funding").value="high";
  else if(fund.includes("low")||fund.includes("negative"))$("funding").value="low";
  else if(fund.includes("normal")||fund.includes("neutral"))$("funding").value="normal";
+
  const missing=[];
  [["ETH price","ethPrice"],["Funding rate","fundingRate"],["DXY today","dxyToday"],["DXY previous day","dxyYesterday"],["Nasdaq futures","nasdaq"],["ETF today","etfToday"],["ETF previous day","etfYesterday"]].forEach(([name,id])=>{if(!$(id).value)missing.push(name);});
  $("parseStatus").innerText=missing.length?("Auto-fill completed, but missing: "+missing.join(", ")+". Please fill manually."):"Auto-fill completed. Review values, then click Calculate & Save.";
