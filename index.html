@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>ETH Night Dump Risk Tracker V5</title>
+<title>ETH Night Dump Risk Tracker V6</title>
 <style>
 body{font-family:Arial,sans-serif;background:#f4f6f8;margin:0;padding:18px;color:#1f2937}
-.container{max-width:1120px;margin:auto}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.container{max-width:1160px;margin:auto}.card{background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 h1{font-size:28px;margin-top:0}h2{font-size:20px;margin-top:0}.small{color:#64748b;line-height:1.5;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 label{display:block;font-size:14px;font-weight:700;margin-bottom:6px}
 input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;font-size:15px;box-sizing:border-box}
 textarea{min-height:150px;resize:vertical;font-family:Arial,sans-serif}
@@ -17,7 +17,7 @@ button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:
 .result{padding:22px;border-radius:16px;margin-top:18px;font-size:20px;font-weight:bold;text-align:center}
 .low{background:#d1fae5;color:#065f46}.medium{background:#fef3c7;color:#92400e}.high{background:#fee2e2;color:#991b1b}
 .explain{margin-top:12px;text-align:left;font-size:15px;font-weight:normal;line-height:1.55}
-.score-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:12px}
+.score-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
 .mini{padding:12px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fafc;font-size:14px}
 .table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:9px;border-bottom:1px solid #edf2f7;text-align:center;white-space:nowrap}th{background:#f1f5f9}
 .pill{display:inline-block;padding:5px 10px;border-radius:999px;font-weight:700;font-size:12px}.footer-note{font-size:12px;color:#64748b;margin-top:8px;line-height:1.4}
@@ -28,9 +28,9 @@ button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:
 <body>
 <div class="container">
 <div class="card">
-<h1>ETH Night Dump Risk Tracker V5</h1>
-<p class="small">Manual-first tracker for GitHub Pages. Paste ChatGPT output into the parser box to auto-fill the form, then calculate and save.</p>
-<div class="notice"><b>Important:</b> This is a risk filter, not financial advice.</div>
+<h1>ETH Night Dump Risk Tracker V6</h1>
+<p class="small">Manual-first tracker for delayed market data. V6 uses <b>Latest / Previous ETF flow</b> plus <b>7-day ETF trend</b>, and has a stronger parser for Nasdaq futures and ETF flow formats.</p>
+<div class="notice"><b>Important:</b> ETF data is often delayed. Use latest available ETF flow instead of forcing “today”. This tracker is a risk filter, not financial advice.</div>
 </div>
 
 <div class="card">
@@ -40,12 +40,14 @@ button{border:0;padding:12px 16px;border-radius:10px;cursor:pointer;font-weight:
 Funding rate: 0.045%
 Funding: high
 DXY today: 106.2
-DXY yesterday: 105.8
+DXY previous: 105.8
 DXY change %: +0.38%
 Nasdaq futures %: -0.65
-ETF today: -45
-ETF yesterday: -20
-ETH trend: flat"></textarea>
+Latest ETH ETF flow: -45
+Previous ETH ETF flow: -20
+ETH ETF 7-day trend: negative
+ETH trend: flat
+Data freshness: ETF latest available is yesterday"></textarea>
 <button class="success" onclick="parseChatGPT()">Auto Fill From ChatGPT</button>
 <button class="secondary" onclick="clearChatInput()">Clear Paste Box</button>
 <div id="parseStatus" class="footer-note"></div>
@@ -55,17 +57,19 @@ ETH trend: flat"></textarea>
 <h2>Daily / Historical Input</h2>
 <div class="grid">
 <div><label>Date</label><input id="date" type="date"></div>
-<div><label>ETH Spot Price</label><input id="ethPrice" type="number" step="0.01"></div>
-<div><label>Funding Rate %</label><input id="fundingRate" type="number" step="0.0001"></div>
-<div><label>DXY Today</label><input id="dxyToday" type="number" step="0.01"></div>
-<div><label>DXY Previous Day</label><input id="dxyYesterday" type="number" step="0.01"></div>
-<div><label>Nasdaq Futures %</label><input id="nasdaq" type="number" step="0.01"></div>
-<div><label>ETH ETF Flow Today ($M)</label><input id="etfToday" type="number" step="0.01"></div>
-<div><label>ETH ETF Flow Previous Day ($M)</label><input id="etfYesterday" type="number" step="0.01"></div>
+<div><label>ETH Spot Price</label><input id="ethPrice" type="number" step="0.01" placeholder="e.g. 2305"></div>
+<div><label>Funding Rate %</label><input id="fundingRate" type="number" step="0.0001" placeholder="e.g. 0.045"></div>
+<div><label>DXY Today</label><input id="dxyToday" type="number" step="0.01" placeholder="e.g. 106.20"></div>
+<div><label>DXY Previous Day</label><input id="dxyPrevious" type="number" step="0.01" placeholder="e.g. 105.80"></div>
+<div><label>Nasdaq Futures %</label><input id="nasdaq" type="number" step="0.01" placeholder="e.g. -0.75"></div>
+<div><label>Latest ETH ETF Flow ($M)</label><input id="etfLatest" type="number" step="0.01" placeholder="e.g. -45"></div>
+<div><label>Previous ETH ETF Flow ($M)</label><input id="etfPrevious" type="number" step="0.01" placeholder="e.g. -20"></div>
+<div><label>ETH ETF 7-Day Trend</label><select id="etfTrend"><option value="neutral">Neutral / Unknown</option><option value="positive">Positive</option><option value="negative">Negative</option></select></div>
 <div><label>Late Re-check</label><select id="lateCheck"><option value="neutral">Neutral / Not checked</option><option value="worse">DXY/Futures worsened</option><option value="better">DXY/Futures improved</option></select></div>
 <div><label>ETH Intraday Trend</label><select id="ethTrend"><option value="flat">Flat</option><option value="rising">Rising</option><option value="falling">Falling</option></select></div>
 <div><label>Funding / Leverage</label><select id="funding"><option value="normal">Normal</option><option value="high">High long leverage</option><option value="low">Low / neutral leverage</option></select></div>
-<div><label>Notes</label><input id="notes" type="text"></div>
+<div><label>Data Freshness</label><input id="freshness" type="text" placeholder="e.g. ETF latest available is yesterday"></div>
+<div><label>Notes</label><input id="notes" type="text" placeholder="e.g. CPI night, FOMC, ETF delay"></div>
 </div>
 <button class="primary" onclick="calculateRisk()">Calculate & Save</button>
 <button class="secondary" onclick="loadSelectedDate()">Load Selected Date</button>
@@ -83,19 +87,21 @@ ETH price:
 Funding rate:
 Funding (high/normal/low):
 DXY today:
-DXY yesterday:
+DXY previous:
 DXY change %:
 Nasdaq futures %:
-ETF today:
-ETF yesterday:
-ETH trend (rising/flat/falling):</textarea>
+Latest ETH ETF flow:
+Previous ETH ETF flow:
+ETH ETF 7-day trend (positive/neutral/negative):
+ETH trend (rising/flat/falling):
+Data freshness:</textarea>
 </div>
 
 <div class="card">
 <h2>History / Backtest Input</h2>
 <div class="table-wrap">
 <table>
-<thead><tr><th>Date</th><th>ETH</th><th>Funding %</th><th>DXY %</th><th>Nasdaq %</th><th>ETF Today</th><th>ETF Prev</th><th>ETH Trend</th><th>Funding</th><th>Score</th><th>Signal</th><th>Bias</th><th>Notes</th></tr></thead>
+<thead><tr><th>Date</th><th>ETH</th><th>Funding %</th><th>DXY %</th><th>Nasdaq %</th><th>ETF Latest</th><th>ETF Prev</th><th>ETF 7D</th><th>ETH Trend</th><th>Funding</th><th>Score</th><th>Signal</th><th>Bias</th><th>Freshness</th><th>Notes</th></tr></thead>
 <tbody id="history"></tbody>
 </table>
 </div>
@@ -108,7 +114,8 @@ ETH trend (rising/flat/falling):</textarea>
 <div class="score-row">
 <div class="mini"><b>DXY:</b><br>+1 if up >=0.30%<br>+2 if up >=0.60%</div>
 <div class="mini"><b>Nasdaq:</b><br>+1 if -0.5% to -1.0%<br>+2 if below -1.0%</div>
-<div class="mini"><b>ETF Flow:</b><br>+1 if today outflow<br>+2 if 2-day outflow</div>
+<div class="mini"><b>ETF Flow:</b><br>+1 if latest outflow<br>+2 if latest + previous outflow</div>
+<div class="mini"><b>ETF 7-Day Trend:</b><br>+1 if negative<br>-1 if positive</div>
 <div class="mini"><b>Late Re-check:</b><br>+1 if worsened<br>-1 if improved</div>
 <div class="mini"><b>ETH Trend:</b><br>+1 if falling<br>-1 if rising</div>
 <div class="mini"><b>Funding:</b><br>+1 if high long leverage<br>-1 if low/neutral leverage</div>
@@ -126,56 +133,62 @@ function parseChatGPT(){
  const text=$("chatInput").value;
  if(!text.trim()){alert("Please paste ChatGPT output first.");return;}
 
- function normalize(s){
-   return String(s||"").toLowerCase().replace(/\s+/g," ").trim();
- }
-
+ function normalize(s){return String(s||"").toLowerCase().replace(/[–—]/g,"-").replace(/\s+/g," ").trim();}
  function cleanNum(v){
-   if(!v) return "";
+   if(!v)return "";
    let s=String(v).replace(/[$,%]/g,"").replace(/,/g,"").trim();
-   s=s.replace(/\b(million|millions|mn|m)\b/ig,"").trim();
+   s=s.replace(/\b(million|millions|mn|m|usd|usdt)\b/ig,"").trim();
    return s;
  }
 
- function findValueByLabels(labels){
+ function getLineValue(labels){
    const lines=text.split(/\n+/).map(l=>l.trim()).filter(Boolean);
    const normLabels=labels.map(normalize);
-
-   // First: line-based search, best for strict format
    for(const line of lines){
      const nline=normalize(line);
      for(const lab of normLabels){
        if(nline.startsWith(lab)){
-         let value=line.split(":").slice(1).join(":").trim();
-         if(!value){
-           value=line.replace(new RegExp(lab.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"i"),"").trim();
-         }
+         let value=line.includes(":") ? line.split(":").slice(1).join(":").trim() : line.substring(lab.length).trim();
          return value;
        }
      }
    }
-
-   // Second: flexible regex anywhere in text
-   for(const lab of labels){
-     const safe=lab.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
-     const re=new RegExp(safe+"\\s*(?:\\([^\\)]*\\))?\\s*:?\\s*([^\\n]+)","i");
-     const m=text.match(re);
-     if(m) return m[1].trim();
-   }
-
    return "";
  }
 
+ function regexValue(labels){
+   for(const label of labels){
+     const safe=label.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+     const re=new RegExp(safe+"\\s*(?:\\([^\\)]*\\))?\\s*:?\\s*([^\\n]+)","i");
+     const m=text.match(re);
+     if(m)return m[1].trim();
+   }
+   return "";
+ }
+
+ function rawValue(labels){return getLineValue(labels)||regexValue(labels);}
+
  function extractNumber(labels){
-   let raw=findValueByLabels(labels);
-   if(!raw) return "";
+   let raw=rawValue(labels);
+   if(!raw)return "";
+   if(/n\/a|not available|no fresh|unavailable|unknown/i.test(raw)) return "";
    const m=raw.match(/[-+]?\$?\d{1,3}(?:,\d{3})*(?:\.\d+)?%?|[-+]?\d*\.?\d+%?/);
    return m?cleanNum(m[0]):"";
  }
 
  function extractWord(labels){
-   let raw=findValueByLabels(labels);
-   if(!raw) return "";
+   let raw=rawValue(labels);
+   if(!raw)return "";
+   const lower=raw.toLowerCase();
+   if(lower.includes("negative")) return "negative";
+   if(lower.includes("positive")) return "positive";
+   if(lower.includes("neutral")) return "neutral";
+   if(lower.includes("rising")) return "rising";
+   if(lower.includes("falling")) return "falling";
+   if(lower.includes("flat")) return "flat";
+   if(lower.includes("high")) return "high";
+   if(lower.includes("normal")) return "normal";
+   if(lower.includes("low")) return "low";
    const m=raw.match(/[a-zA-Z]+/);
    return m?m[0].toLowerCase():"";
  }
@@ -184,13 +197,17 @@ function parseChatGPT(){
    ["ethPrice",extractNumber(["ETH price","Ethereum price","ETH spot price"])],
    ["fundingRate",extractNumber(["Funding rate","ETH funding rate","ETHUSDT funding rate"])],
    ["dxyToday",extractNumber(["DXY today","DXY current","DXY now"])],
-   ["dxyYesterday",extractNumber(["DXY yesterday","DXY previous","DXY previous day","DXY prior day"])],
-   ["nasdaq",extractNumber(["Nasdaq futures %","Nasdaq futures","NASDAQ futures %","NASDAQ futures","NQ futures","Nasdaq 100 futures","Nasdaq-100 futures"])],
-   ["etfToday",extractNumber(["ETF today","ETH ETF today","ETH ETF flow today","ETH ETF flows today","Ethereum ETF flow today","Ethereum ETF flows today","Spot ETH ETF flow today","Net ETF flow today"])],
-   ["etfYesterday",extractNumber(["ETF yesterday","ETF previous","ETF previous day","ETH ETF yesterday","ETH ETF previous day","ETH ETF flow previous day","ETH ETF flows previous day","Ethereum ETF flow previous day","Spot ETH ETF flow previous day","Net ETF flow previous day"])]
+   ["dxyPrevious",extractNumber(["DXY previous","DXY yesterday","DXY prior","DXY previous day","DXY prior day"])],
+   ["nasdaq",extractNumber(["Nasdaq futures %","Nasdaq futures","NASDAQ futures %","NASDAQ futures","NQ futures","Nasdaq 100 futures","Nasdaq-100 futures","US tech futures","Tech futures"])],
+   ["etfLatest",extractNumber(["Latest ETH ETF flow","Latest ETH ETF flows","ETH ETF latest flow","ETF latest","Latest ETF flow","ETF today","ETH ETF today","ETH ETF flow today","Spot ETH ETF latest flow","Net ETF flow latest"])],
+   ["etfPrevious",extractNumber(["Previous ETH ETF flow","Previous ETH ETF flows","ETH ETF previous flow","ETF previous","Previous ETF flow","ETF yesterday","ETF previous day","ETH ETF yesterday","ETH ETF previous day","Spot ETH ETF previous flow","Net ETF flow previous"])]
  ];
-
  fields.forEach(([id,val])=>{if(val)$(id).value=val;});
+
+ const etfTrend=extractWord(["ETH ETF 7-day trend","ETH ETF 7 day trend","ETF 7-day trend","ETF 7 day trend","7-day ETF trend","7 day ETF trend"]);
+ if(etfTrend.includes("positive"))$("etfTrend").value="positive";
+ else if(etfTrend.includes("negative"))$("etfTrend").value="negative";
+ else if(etfTrend.includes("neutral"))$("etfTrend").value="neutral";
 
  const trend=extractWord(["ETH trend","ETH intraday trend","Ethereum trend"]);
  if(trend.includes("ris")||trend.includes("up"))$("ethTrend").value="rising";
@@ -202,73 +219,89 @@ function parseChatGPT(){
  else if(fund.includes("low")||fund.includes("negative"))$("funding").value="low";
  else if(fund.includes("normal")||fund.includes("neutral"))$("funding").value="normal";
 
+ const freshness=rawValue(["Data freshness","Freshness","ETF data freshness"]);
+ if(freshness)$("freshness").value=freshness;
+
  const missing=[];
- [["ETH price","ethPrice"],["Funding rate","fundingRate"],["DXY today","dxyToday"],["DXY previous day","dxyYesterday"],["Nasdaq futures","nasdaq"],["ETF today","etfToday"],["ETF previous day","etfYesterday"]].forEach(([name,id])=>{if(!$(id).value)missing.push(name);});
- $("parseStatus").innerText=missing.length?("Auto-fill completed, but missing: "+missing.join(", ")+". Please fill manually."):"Auto-fill completed. Review values, then click Calculate & Save.";
+ [["ETH price","ethPrice"],["Funding rate","fundingRate"],["DXY today","dxyToday"],["DXY previous","dxyPrevious"],["Nasdaq futures","nasdaq"],["Latest ETH ETF flow","etfLatest"],["Previous ETH ETF flow","etfPrevious"]].forEach(([name,id])=>{if(!$(id).value)missing.push(name);});
+ $("parseStatus").innerText=missing.length?("Auto-fill completed, but missing: "+missing.join(", ")+". Please fill manually or use latest available data."):"Auto-fill completed. Review values, then click Calculate & Save.";
 }
 
 function clearChatInput(){$("chatInput").value="";$("parseStatus").innerText="";}
-function pctChange(today,yesterday){if(!yesterday||yesterday===0)return 0;return((today-yesterday)/yesterday)*100;}
+function pctChange(today,previous){if(!previous||previous===0)return 0;return((today-previous)/previous)*100;}
 
 function calculateRisk(){
  const date=$("date").value||todayDate();
  const ethPrice=parseFloat($("ethPrice").value||"0");
  const fundingRate=parseFloat($("fundingRate").value||"0");
- const dxyToday=parseFloat($("dxyToday").value),dxyYesterday=parseFloat($("dxyYesterday").value),nasdaq=parseFloat($("nasdaq").value),etfToday=parseFloat($("etfToday").value),etfYesterday=parseFloat($("etfYesterday").value);
- const lateCheck=$("lateCheck").value,ethTrend=$("ethTrend").value,funding=$("funding").value,notes=$("notes").value.trim();
- if([dxyToday,dxyYesterday,nasdaq,etfToday,etfYesterday].some(v=>isNaN(v))){$("result").innerHTML='<div class="result high">Please fill in DXY, Nasdaq, and ETF numeric fields first.</div>';return;}
- let score=0,reasons=[],dxyPct=pctChange(dxyToday,dxyYesterday);
+ const dxyToday=parseFloat($("dxyToday").value),dxyPrevious=parseFloat($("dxyPrevious").value),nasdaq=parseFloat($("nasdaq").value),etfLatest=parseFloat($("etfLatest").value),etfPrevious=parseFloat($("etfPrevious").value);
+ const etfTrend=$("etfTrend").value,lateCheck=$("lateCheck").value,ethTrend=$("ethTrend").value,funding=$("funding").value,freshness=$("freshness").value.trim(),notes=$("notes").value.trim();
+ if([dxyToday,dxyPrevious,nasdaq,etfLatest,etfPrevious].some(v=>isNaN(v))){$("result").innerHTML='<div class="result high">Please fill in DXY, Nasdaq, Latest ETF flow, and Previous ETF flow numeric fields first.</div>';return;}
+ let score=0,reasons=[],dxyPct=pctChange(dxyToday,dxyPrevious);
+
  if(dxyPct>=0.60){score+=2;reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, strong USD risk-off signal. (+2)`);}
  else if(dxyPct>=0.30){score+=1;reasons.push(`DXY is up ${dxyPct.toFixed(2)}%, mild USD risk-off signal. (+1)`);}
  else reasons.push(`DXY change is ${dxyPct.toFixed(2)}%, not a major pressure signal. (+0)`);
+
  if(nasdaq<-1.0){score+=2;reasons.push("Nasdaq futures are below -1.0%, strong risk-off pressure. (+2)");}
  else if(nasdaq<-0.5){score+=1;reasons.push("Nasdaq futures are below -0.5%, mild risk-off pressure. (+1)");}
  else reasons.push("Nasdaq futures are not weak enough to trigger risk-off. (+0)");
- if(etfToday<0&&etfYesterday<0){score+=2;reasons.push("ETH ETF flows show 2 consecutive outflow days. (+2)");}
- else if(etfToday<0){score+=1;reasons.push("ETH ETF flow today is negative. (+1)");}
- else reasons.push("ETH ETF flow today is positive or neutral. (+0)");
+
+ if(etfLatest<0&&etfPrevious<0){score+=2;reasons.push("Latest and previous ETH ETF flows are both negative. (+2)");}
+ else if(etfLatest<0){score+=1;reasons.push("Latest ETH ETF flow is negative. (+1)");}
+ else reasons.push("Latest ETH ETF flow is positive or neutral. (+0)");
+
+ if(etfTrend==="negative"){score+=1;reasons.push("ETH ETF 7-day trend is negative. (+1)");}
+ else if(etfTrend==="positive"){score-=1;reasons.push("ETH ETF 7-day trend is positive. (-1)");}
+ else reasons.push("ETH ETF 7-day trend is neutral or unknown. (+0)");
+
  if(lateCheck==="worse"){score+=1;reasons.push("Late-session re-check worsened. (+1)");}
  else if(lateCheck==="better"){score-=1;reasons.push("Late-session re-check improved. (-1)");}
  else reasons.push("Late-session re-check is neutral or not checked. (+0)");
+
  if(ethTrend==="falling"){score+=1;reasons.push("ETH intraday trend is falling, confirming downside pressure. (+1)");}
  else if(ethTrend==="rising"){score-=1;reasons.push("ETH intraday trend is rising, reducing dump probability. (-1)");}
  else reasons.push("ETH intraday trend is flat. (+0)");
+
  if(funding==="high"){score+=1;reasons.push("Funding indicates high long leverage, increasing liquidation cascade risk. (+1)");}
  else if(funding==="low"){score-=1;reasons.push("Funding indicates low/negative leverage pressure, reducing long liquidation risk. (-1)");}
  else reasons.push("Funding/leverage is normal. (+0)");
+
  score=Math.max(0,score);
  let signal,css,bias,confidence,action;
  if(score>=5){signal="HIGH DUMP RISK";css="high";bias="Bearish Night Bias";confidence="High";action="Reduce risk, avoid leverage, and expect volatility/liquidation risk.";}
  else if(score>=3){signal="MEDIUM RISK";css="medium";bias="Uncertain / Choppy Bias";confidence="Medium";action="Be cautious. Avoid aggressive longs unless ETH reclaims key levels.";}
  else{signal="LOW RISK";css="low";bias="Stable / Slight Bull Bias";confidence="Low-to-Medium";action="Lower dump risk, but keep monitoring news and late-session changes.";}
- $("result").innerHTML=`<div class="result ${css}">Score: ${score} — ${signal}<br><span style="font-size:16px;">${bias} | Confidence: ${confidence}</span><div class="explain"><b>Suggested action:</b> ${action}<br><br><b>Reasoning:</b><br>${reasons.map(r=>"• "+r).join("<br>")}</div></div>`;
- saveRecord({date,ethPrice:ethPrice?ethPrice.toFixed(2):"",fundingRate:isNaN(fundingRate)?"":fundingRate.toFixed(4),dxyToday,dxyYesterday,dxyPct:dxyPct.toFixed(2),nasdaq,etfToday,etfYesterday,lateCheck,ethTrend,funding,score,signal,bias,notes});
+
+ $("result").innerHTML=`<div class="result ${css}">Score: ${score} — ${signal}<br><span style="font-size:16px;">${bias} | Confidence: ${confidence}</span><div class="explain"><b>Suggested action:</b> ${action}<br><br><b>Reasoning:</b><br>${reasons.map(r=>"• "+r).join("<br>")}${freshness?("<br><br><b>Data freshness:</b> "+freshness):""}</div></div>`;
+
+ saveRecord({date,ethPrice:ethPrice?ethPrice.toFixed(2):"",fundingRate:isNaN(fundingRate)?"":fundingRate.toFixed(4),dxyToday,dxyPrevious,dxyPct:dxyPct.toFixed(2),nasdaq,etfLatest,etfPrevious,etfTrend,lateCheck,ethTrend,funding,score,signal,bias,freshness,notes});
 }
 
-function getHistory(){return JSON.parse(localStorage.getItem("ethRiskV5History")||"[]");}
-function saveRecord(record){let history=getHistory();history=history.filter(r=>r.date!==record.date);history.unshift(record);history.sort((a,b)=>b.date.localeCompare(a.date));localStorage.setItem("ethRiskV5History",JSON.stringify(history.slice(0,365)));renderHistory();}
+function getHistory(){return JSON.parse(localStorage.getItem("ethRiskV6History")||"[]");}
+function saveRecord(record){let history=getHistory();history=history.filter(r=>r.date!==record.date);history.unshift(record);history.sort((a,b)=>b.date.localeCompare(a.date));localStorage.setItem("ethRiskV6History",JSON.stringify(history.slice(0,365)));renderHistory();}
 function renderHistory(){
  const history=getHistory();
  $("history").innerHTML=history.map(r=>{
    const cls=r.score>=5?"high":r.score>=3?"medium":"low";
-   return `<tr onclick="loadDate('${r.date}')" style="cursor:pointer"><td>${r.date}</td><td>${r.ethPrice?("$"+r.ethPrice):"-"}</td><td>${r.fundingRate?r.fundingRate+"%":"-"}</td><td>${r.dxyPct}%</td><td>${r.nasdaq}%</td><td>$${r.etfToday}M</td><td>$${r.etfYesterday}M</td><td>${r.ethTrend}</td><td>${r.funding}</td><td>${r.score}</td><td><span class="pill ${cls}">${r.signal}</span></td><td>${r.bias}</td><td>${r.notes||""}</td></tr>`;
+   return `<tr onclick="loadDate('${r.date}')" style="cursor:pointer"><td>${r.date}</td><td>${r.ethPrice?("$"+r.ethPrice):"-"}</td><td>${r.fundingRate?r.fundingRate+"%":"-"}</td><td>${r.dxyPct}%</td><td>${r.nasdaq}%</td><td>$${r.etfLatest}M</td><td>$${r.etfPrevious}M</td><td>${r.etfTrend}</td><td>${r.ethTrend}</td><td>${r.funding}</td><td>${r.score}</td><td><span class="pill ${cls}">${r.signal}</span></td><td>${r.bias}</td><td>${r.freshness||""}</td><td>${r.notes||""}</td></tr>`;
  }).join("");
 }
 function loadSelectedDate(){loadDate($("date").value);}
 function loadDate(date){
  const r=getHistory().find(x=>x.date===date);
  if(!r){alert("No saved record for this date yet.");return;}
- $("date").value=r.date;$("ethPrice").value=r.ethPrice||"";$("fundingRate").value=r.fundingRate||"";$("dxyToday").value=r.dxyToday;$("dxyYesterday").value=r.dxyYesterday;$("nasdaq").value=r.nasdaq;$("etfToday").value=r.etfToday;$("etfYesterday").value=r.etfYesterday;$("lateCheck").value=r.lateCheck||"neutral";$("ethTrend").value=r.ethTrend||"flat";$("funding").value=r.funding||"normal";$("notes").value=r.notes||"";
+ $("date").value=r.date;$("ethPrice").value=r.ethPrice||"";$("fundingRate").value=r.fundingRate||"";$("dxyToday").value=r.dxyToday;$("dxyPrevious").value=r.dxyPrevious;$("nasdaq").value=r.nasdaq;$("etfLatest").value=r.etfLatest;$("etfPrevious").value=r.etfPrevious;$("etfTrend").value=r.etfTrend||"neutral";$("lateCheck").value=r.lateCheck||"neutral";$("ethTrend").value=r.ethTrend||"flat";$("funding").value=r.funding||"normal";$("freshness").value=r.freshness||"";$("notes").value=r.notes||"";
  $("result").innerHTML=`<div class="result ${r.score>=5?"high":r.score>=3?"medium":"low"}">Loaded ${date}: Score ${r.score} — ${r.signal}</div>`;
 }
-function fillExample(){$("date").value=todayDate();$("ethPrice").value="2300";$("fundingRate").value="0.0500";$("dxyToday").value="106.20";$("dxyYesterday").value="105.55";$("nasdaq").value="-1.25";$("etfToday").value="-45";$("etfYesterday").value="-30";$("lateCheck").value="worse";$("ethTrend").value="falling";$("funding").value="high";$("notes").value="Example high-risk setup";}
-function clearInputs(){$("date").value=todayDate();["ethPrice","fundingRate","dxyToday","dxyYesterday","nasdaq","etfToday","etfYesterday","notes"].forEach(id=>$(id).value="");$("lateCheck").value="neutral";$("ethTrend").value="flat";$("funding").value="normal";$("result").innerHTML="";}
-function clearHistory(){if(confirm("Clear all saved history?")){localStorage.removeItem("ethRiskV5History");renderHistory();}}
+function fillExample(){$("date").value=todayDate();$("ethPrice").value="2300";$("fundingRate").value="0.0500";$("dxyToday").value="106.20";$("dxyPrevious").value="105.55";$("nasdaq").value="-1.25";$("etfLatest").value="-45";$("etfPrevious").value="-30";$("etfTrend").value="negative";$("lateCheck").value="worse";$("ethTrend").value="falling";$("funding").value="high";$("freshness").value="ETF latest available is yesterday";$("notes").value="Example high-risk setup";}
+function clearInputs(){["ethPrice","fundingRate","dxyToday","dxyPrevious","nasdaq","etfLatest","etfPrevious","freshness","notes"].forEach(id=>$(id).value="");$("date").value=todayDate();$("etfTrend").value="neutral";$("lateCheck").value="neutral";$("ethTrend").value="flat";$("funding").value="normal";$("result").innerHTML="";}
+function clearHistory(){if(confirm("Clear all saved history?")){localStorage.removeItem("ethRiskV6History");renderHistory();}}
 function exportCSV(){
  const history=getHistory(); if(!history.length){alert("No history to export.");return;}
- const rows=[["Date","ETH Price","Funding Rate %","DXY Today","DXY Previous","DXY %","Nasdaq %","ETF Today","ETF Previous","Late Check","ETH Trend","Funding","Score","Signal","Bias","Notes"],...history.map(r=>[r.date,r.ethPrice,r.fundingRate,r.dxyToday,r.dxyYesterday,r.dxyPct,r.nasdaq,r.etfToday,r.etfYesterday,r.lateCheck,r.ethTrend,r.funding,r.score,r.signal,r.bias,(r.notes||"").replaceAll(",",";")])];
+ const rows=[["Date","ETH Price","Funding Rate %","DXY Today","DXY Previous","DXY %","Nasdaq %","ETF Latest","ETF Previous","ETF 7D Trend","Late Check","ETH Trend","Funding","Score","Signal","Bias","Freshness","Notes"],...history.map(r=>[r.date,r.ethPrice,r.fundingRate,r.dxyToday,r.dxyPrevious,r.dxyPct,r.nasdaq,r.etfLatest,r.etfPrevious,r.etfTrend,r.lateCheck,r.ethTrend,r.funding,r.score,r.signal,r.bias,(r.freshness||"").replaceAll(",",";"),(r.notes||"").replaceAll(",",";")])];
  const csv=rows.map(row=>row.join(",")).join("\n"),blob=new Blob([csv],{type:"text/csv"}),url=URL.createObjectURL(blob),a=document.createElement("a");
- a.href=url;a.download="eth_night_dump_tracker_v5_history.csv";a.click();URL.revokeObjectURL(url);
+ a.href=url;a.download="eth_night_dump_tracker_v6_history.csv";a.click();URL.revokeObjectURL(url);
 }
 renderHistory();
 </script>
